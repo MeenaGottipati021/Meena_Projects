@@ -1,0 +1,2 @@
+# Meena_Projects
+Designed a real-time data streaming pipeline using Confluent Kafka and AWS Glue (Spark) to transform and store JSON in S3. Leveraged Snowflake for analytics. Implemented schema evolution, fault-tolerant streaming, checkpointing, and scalable cloud-native architecture.

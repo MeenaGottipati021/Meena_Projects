@@ -1,0 +1,56 @@
+CREATE DATABASE IF NOT EXISTS demo_project;
+USE DATABASE demo_project;
+CREATE SCHEMA IF NOT EXISTS demo_raw;
+
+
+CREATE OR REPLACE TABLE demo_raw.raw_users_json (
+    raw_data VARIANT,                               
+    load_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP()   
+);
+
+INSERT INTO demo_raw.raw_users_json (raw_data)
+SELECT PARSE_JSON('{
+  "id": 1,
+  "name": "Meena",
+  "email": "Meena@gmail.com",
+  "status": "ACTIVE",
+  "event_ts": "2025-11-27 11:39:00"
+}');
+INSERT INTO demo_raw.raw_users_json (raw_data)
+SELECT PARSE_JSON('{
+  "id": 2,
+  "name": "priya",
+  "email": "priya@gmail.com",
+  "status": "ACTIVE",
+  "event_ts": "2025-11-27 11:40:00"
+}');
+INSERT INTO demo_raw.raw_users_json (raw_data)
+SELECT PARSE_JSON('{
+  "id": 4,
+  "name": "MG",
+  "email": "meenag9@gmail.com",
+  "status": "ACTIVE",
+  "event_ts": "2025-11-27 11:40:00"
+}');
+
+SELECT *
+FROM demo_raw.raw_users_json;
+
+SELECT *
+FROM (
+    SELECT
+        raw_data:id::INT AS id,
+        raw_data:name::STRING AS name,
+        raw_data:email::STRING AS email,
+        raw_data:status::STRING AS status,
+        raw_data:event_ts::TIMESTAMP AS event_ts,
+        load_ts,
+        ROW_NUMBER() OVER (
+            ORDER BY event_ts DESC
+        ) AS rn
+    FROM demo_raw.raw_users_json
+)
+WHERE rn <= 5        
+ORDER BY rn;
+
+
