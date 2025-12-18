@@ -1,0 +1,36 @@
+CREATE SCHEMA IF NOT EXISTS demo_silver;
+
+CREATE OR REPLACE TABLE demo_silver.users_silver (
+    id INT,
+    name STRING,
+    email STRING,
+    status STRING,
+    event_ts TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE demo_silver.users_silver AS
+SELECT
+    id,
+    name,
+    email,
+    status,
+    event_ts
+FROM (
+    SELECT
+        raw_data:id::INT AS id,
+        raw_data:name::STRING AS name,
+        raw_data:email::STRING AS email,
+        raw_data:status::STRING AS status,
+        raw_data:event_ts::TIMESTAMP AS event_ts,
+        ROW_NUMBER() OVER (
+            PARTITION BY raw_data:id::INT
+            ORDER BY raw_data:event_ts::TIMESTAMP DESC
+        ) AS rn
+    FROM demo_raw.raw_users_json
+)
+WHERE rn = 1
+ORDER BY id;
+
+SELECT * FROM demo_silver.users_silver ORDER BY id;
+
+
